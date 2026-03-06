@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Post — Rankr</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0c0c10;--bg-card:rgba(255,255,255,0.04);--bg-card-hover:rgba(255,255,255,0.07);
+  --bg-glass:rgba(18,18,24,0.85);--border:rgba(255,255,255,0.06);--border-hover:rgba(255,255,255,0.12);
+  --green:#b8e847;--green-dim:rgba(184,232,71,0.15);--green-glow:rgba(184,232,71,0.25);
+  --text:#f0f0f2;--text-secondary:#9a9aa8;--text-dim:#5c5c6e;
+  --radius:16px;--radius-sm:10px;--font:'Inter',-apple-system,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:var(--font);-webkit-font-smoothing:antialiased;}
+nav{display:flex;align-items:center;justify-content:space-between;padding:16px 32px;position:sticky;top:0;z-index:100;background:rgba(12,12,16,0.8);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);}
+.nav-logo{font-size:20px;font-weight:800;letter-spacing:-0.5px;background:linear-gradient(135deg,var(--green),#6ee7b7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-decoration:none;}
+.nav-back{color:var(--text-secondary);text-decoration:none;font-size:14px;display:flex;align-items:center;gap:6px;transition:color .2s;}
+.nav-back:hover{color:var(--text);}
+
+/* LAYOUT */
+.layout{display:grid;grid-template-columns:1fr 300px;gap:24px;padding:32px;max-width:1100px;margin:0 auto;}
+
+/* CLUB HEADER */
+.club-header{
+  background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:20px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;
+}
+.club-name{font-size:16px;font-weight:700;}
+.club-breadcrumb{font-size:12px;color:var(--text-dim);}
+
+/* POST DETAIL */
+.post-detail{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:20px;}
+.post-author{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+.post-avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#a78bfa);}
+.post-name{font-size:15px;font-weight:600;}
+.post-time{font-size:12px;color:var(--text-dim);}
+.post-text{font-size:15px;line-height:1.7;color:var(--text-secondary);margin-bottom:16px;}
+.post-image{width:100%;aspect-ratio:16/9;border-radius:var(--radius-sm);background:linear-gradient(135deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01));display:flex;align-items:center;justify-content:center;color:var(--text-dim);font-size:32px;margin-bottom:16px;}
+.post-actions{display:flex;gap:16px;padding-top:12px;border-top:1px solid var(--border);}
+.post-action{font-size:13px;color:var(--text-dim);cursor:pointer;transition:color .2s;display:flex;align-items:center;gap:4px;}
+.post-action:hover{color:var(--text);}
+
+/* COMMENTS */
+.comments-section{margin-bottom:20px;}
+.section-label{font-size:12px;font-weight:600;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;}
+.comment{display:flex;gap:10px;padding:14px 0;border-bottom:1px solid var(--border);}
+.comment:last-child{border-bottom:none;}
+.comment-avatar{width:28px;height:28px;border-radius:50%;flex-shrink:0;}
+.c-av1{background:linear-gradient(135deg,#059669,#6ee7b7);}
+.c-av2{background:linear-gradient(135deg,#d97706,#fcd34d);}
+.c-av3{background:linear-gradient(135deg,#dc2626,#fca5a5);}
+.comment-body{flex:1;}
+.comment-name{font-size:13px;font-weight:600;margin-bottom:2px;}
+.comment-text{font-size:13px;color:var(--text-secondary);line-height:1.5;}
+.comment-time{font-size:11px;color:var(--text-dim);margin-top:4px;}
+
+/* COMMENT INPUT */
+.comment-input-wrap{display:flex;gap:10px;align-items:center;margin-top:16px;}
+.comment-input{flex:1;padding:10px 16px;background:var(--bg-card);border:1px solid var(--border);border-radius:99px;color:var(--text);font-size:14px;font-family:var(--font);outline:none;transition:border-color .2s;}
+.comment-input:focus{border-color:rgba(184,232,71,0.3);}
+.comment-send{padding:10px 20px;border:none;border-radius:99px;background:var(--green);color:#0c0c10;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);}
+
+/* SIDEBAR */
+.sidebar{display:flex;flex-direction:column;gap:20px;}
+
+/* YOUR RANKING */
+.your-rank{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;text-align:center;}
+.your-rank-label{font-size:12px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}
+.your-rank-num{font-size:48px;font-weight:800;background:linear-gradient(135deg,var(--green),#6ee7b7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1;}
+.your-rank-sub{font-size:13px;color:var(--text-secondary);margin-top:4px;}
+.your-xp{font-size:14px;font-weight:600;color:var(--green);margin-top:12px;}
+.xp-bar{width:100%;height:6px;background:rgba(255,255,255,0.06);border-radius:99px;margin-top:8px;overflow:hidden;}
+.xp-fill{height:100%;background:linear-gradient(90deg,var(--green),#6ee7b7);border-radius:99px;width:68%;}
+
+/* LEADERBOARD */
+.lb-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;}
+.lb-title{font-size:14px;font-weight:700;margin-bottom:16px;}
+.lb-entry{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);}
+.lb-entry:last-child{border-bottom:none;}
+.lb-rank{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;}
+.r1{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#0c0c10;}
+.r2{background:linear-gradient(135deg,#9ca3af,#6b7280);color:#fff;}
+.r3{background:linear-gradient(135deg,#d97706,#b45309);color:#fff;}
+.r4{background:var(--bg-card);color:var(--text-dim);border:1px solid var(--border);}
+.lb-av{width:24px;height:24px;border-radius:50%;flex-shrink:0;}
+.lb-av1{background:linear-gradient(135deg,#7c3aed,#a78bfa);}
+.lb-av2{background:linear-gradient(135deg,#059669,#6ee7b7);}
+.lb-av3{background:linear-gradient(135deg,#d97706,#fcd34d);}
+.lb-av4{background:linear-gradient(135deg,#dc2626,#fca5a5);}
+.lb-info{flex:1;min-width:0;}
+.lb-name{font-size:12px;font-weight:600;}
+.lb-xp{font-size:11px;color:var(--text-dim);}
+
+/* TASKS */
+.tasks-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;}
+.task-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);}
+.task-item:last-child{border-bottom:none;}
+.task-check{width:18px;height:18px;border-radius:5px;border:2px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;}
+.task-check:hover{border-color:var(--green);}
+.task-check.done{background:var(--green);border-color:var(--green);}
+.task-check.done::after{content:'✓';color:#0c0c10;font-size:11px;font-weight:700;}
+.task-name{font-size:12px;font-weight:500;}
+.task-xp{font-size:11px;color:var(--green);font-weight:600;}
+
+.page-nav{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);display:flex;gap:8px;padding:8px 16px;background:var(--bg-glass);border:1px solid var(--border);border-radius:99px;backdrop-filter:blur(12px);z-index:150;}
+.page-nav a{color:var(--text-secondary);text-decoration:none;font-size:12px;font-weight:500;padding:4px 12px;border-radius:99px;transition:all .2s;}
+.page-nav a:hover,.page-nav a.active{background:var(--green);color:#0c0c10;}
+
+@media(max-width:768px){.layout{grid-template-columns:1fr;padding:16px;}}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="../index.html" class="nav-logo">Rankr</a>
+  <a href="community.html" class="nav-back">← WAA Design Club</a>
+</nav>
+
+<div class="layout">
+  <div>
+    <!-- CLUB HEADER -->
+    <div class="club-header">
+      <div>
+        <div class="club-name">WAA Design Club</div>
+        <div class="club-breadcrumb">Community › Post</div>
+      </div>
+    </div>
+
+    <!-- POST -->
+    <div class="post-detail">
+      <div class="post-author">
+        <div class="post-avatar"></div>
+        <div><div class="post-name">Ezven</div><div class="post-time">2 hours ago</div></div>
+      </div>
+      <div class="post-text">Just shipped the new jersey page with a split-screen layout. Sticky showcase on the left, scrollable form on the right. The auto-rotating photos with dot navigation came out clean. What do y'all think — keep iterating or ship it?</div>
+      <div class="post-image">🖼️</div>
+      <div class="post-actions">
+        <span class="post-action">💬 12</span>
+        <span class="post-action">🔥 34</span>
+        <span class="post-action">🔖 Save</span>
+        <span class="post-action">↗ Share</span>
+      </div>
+    </div>
+
+    <!-- COMMENTS -->
+    <div class="comments-section">
+      <div class="section-label">Comments</div>
+      <div class="comment">
+        <div class="comment-avatar c-av1"></div>
+        <div class="comment-body">
+          <div class="comment-name">Laksh</div>
+          <div class="comment-text">The sticky left panel is fire. Only thing — on mobile the showcase stacks above the form which pushes the form down pretty far. Maybe collapse it to a smaller preview?</div>
+          <div class="comment-time">1h ago</div>
+        </div>
+      </div>
+      <div class="comment">
+        <div class="comment-avatar c-av2"></div>
+        <div class="comment-body">
+          <div class="comment-name">Shannon T.</div>
+          <div class="comment-text">Ship it! This is way better than the old full-page form. The dot navigation on the rotating photos is a nice touch.</div>
+          <div class="comment-time">45m ago</div>
+        </div>
+      </div>
+      <div class="comment">
+        <div class="comment-avatar c-av3"></div>
+        <div class="comment-body">
+          <div class="comment-name">JhiNResH</div>
+          <div class="comment-text">Clean work. +1 on shipping. You can always iterate post-launch.</div>
+          <div class="comment-time">20m ago</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COMMENT INPUT -->
+    <div class="comment-input-wrap">
+      <input type="text" class="comment-input" placeholder="Write a comment...">
+      <button class="comment-send">Send</button>
+    </div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="your-rank">
+      <div class="your-rank-label">Your Ranking</div>
+      <div class="your-rank-num">#4</div>
+      <div class="your-rank-sub">out of 142 members</div>
+      <div class="your-xp">3,240 XP</div>
+      <div class="xp-bar"><div class="xp-fill"></div></div>
+    </div>
+
+    <div class="lb-card">
+      <div class="lb-title">🏆 Leaderboard</div>
+      <div class="lb-entry"><div class="lb-rank r1">1</div><div class="lb-av lb-av1"></div><div class="lb-info"><div class="lb-name">Ezven</div><div class="lb-xp">4,820 XP</div></div></div>
+      <div class="lb-entry"><div class="lb-rank r2">2</div><div class="lb-av lb-av2"></div><div class="lb-info"><div class="lb-name">Laksh</div><div class="lb-xp">3,940 XP</div></div></div>
+      <div class="lb-entry"><div class="lb-rank r3">3</div><div class="lb-av lb-av3"></div><div class="lb-info"><div class="lb-name">Shannon T.</div><div class="lb-xp">2,180 XP</div></div></div>
+      <div class="lb-entry"><div class="lb-rank r4">4</div><div class="lb-av lb-av4"></div><div class="lb-info"><div class="lb-name">You</div><div class="lb-xp">1,650 XP</div></div></div>
+    </div>
+
+    <div class="tasks-card">
+      <div class="section-label">Tasks</div>
+      <div class="task-item"><div class="task-check done"></div><div><div class="task-name">Share a WIP design</div><div class="task-xp">+20 XP</div></div></div>
+      <div class="task-item"><div class="task-check"></div><div><div class="task-name">Give feedback on 3 posts</div><div class="task-xp">+30 XP</div></div></div>
+      <div class="task-item"><div class="task-check"></div><div><div class="task-name">Complete color theory quiz</div><div class="task-xp">+15 XP</div></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="page-nav">
+  <a href="../index.html">Home</a>
+  <a href="community.html">Community</a>
+  <a href="club.html" class="active">Club</a>
+  <a href="profile.html">Profile</a>
+</div>
+
+<script>
+document.querySelectorAll('.task-check').forEach(c=>c.addEventListener('click',()=>c.classList.toggle('done')));
+</script>
+</body>
+</html>

@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Profile — Rankr</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0c0c10;--bg-card:rgba(255,255,255,0.04);--bg-card-hover:rgba(255,255,255,0.07);
+  --bg-glass:rgba(18,18,24,0.85);--border:rgba(255,255,255,0.06);--border-hover:rgba(255,255,255,0.12);
+  --green:#b8e847;--green-dim:rgba(184,232,71,0.15);--green-glow:rgba(184,232,71,0.25);
+  --text:#f0f0f2;--text-secondary:#9a9aa8;--text-dim:#5c5c6e;
+  --radius:16px;--radius-sm:10px;--font:'Inter',-apple-system,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:var(--font);-webkit-font-smoothing:antialiased;min-height:100vh;}
+nav{display:flex;align-items:center;justify-content:space-between;padding:16px 32px;position:sticky;top:0;z-index:100;background:rgba(12,12,16,0.8);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);}
+.nav-logo{font-size:20px;font-weight:800;letter-spacing:-0.5px;background:linear-gradient(135deg,var(--green),#6ee7b7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-decoration:none;}
+
+.profile-wrap{max-width:640px;margin:0 auto;padding:40px 24px 100px;}
+
+/* PROFILE CARD */
+.profile-card{
+  background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:32px;text-align:center;margin-bottom:20px;
+}
+.profile-avatar{
+  width:88px;height:88px;border-radius:50%;margin:0 auto 16px;
+  background:linear-gradient(135deg,#7c3aed,#a78bfa);
+  border:3px solid var(--green);
+  display:flex;align-items:center;justify-content:center;
+  font-size:32px;font-weight:800;color:#fff;
+}
+.profile-name{font-size:24px;font-weight:800;letter-spacing:-0.5px;margin-bottom:4px;}
+.profile-handle{font-size:14px;color:var(--text-dim);margin-bottom:16px;}
+.profile-bio{font-size:14px;color:var(--text-secondary);line-height:1.6;max-width:400px;margin:0 auto 20px;}
+
+/* SOCIALS */
+.socials{display:flex;justify-content:center;gap:12px;margin-bottom:24px;}
+.social-link{
+  display:flex;align-items:center;justify-content:center;
+  width:36px;height:36px;border-radius:10px;
+  background:var(--bg-card);border:1px solid var(--border);
+  color:var(--text-secondary);font-size:14px;text-decoration:none;
+  transition:all .2s;
+}
+.social-link:hover{border-color:var(--border-hover);color:var(--text);background:var(--bg-card-hover);}
+
+/* STATS ROW */
+.stats-row{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:12px;
+  margin-bottom:24px;
+}
+.stat-card{
+  background:rgba(255,255,255,0.02);border:1px solid var(--border);
+  border-radius:var(--radius-sm);padding:16px;text-align:center;
+}
+.stat-num{font-size:24px;font-weight:800;background:linear-gradient(135deg,var(--green),#6ee7b7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.stat-label{font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.5px;margin-top:2px;}
+
+/* XP BAR */
+.xp-section{margin-bottom:4px;}
+.xp-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+.xp-level{font-size:13px;font-weight:600;}
+.xp-amount{font-size:13px;color:var(--green);font-weight:600;}
+.xp-bar{width:100%;height:8px;background:rgba(255,255,255,0.06);border-radius:99px;overflow:hidden;}
+.xp-fill{height:100%;background:linear-gradient(90deg,var(--green),#6ee7b7);border-radius:99px;width:72%;transition:width .5s ease;}
+
+/* WALLET */
+.section-card{
+  background:var(--bg-card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:24px;margin-bottom:20px;
+}
+.section-title{font-size:14px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.wallet-address{
+  display:flex;align-items:center;gap:10px;
+  padding:12px 16px;background:rgba(255,255,255,0.02);
+  border:1px solid var(--border);border-radius:var(--radius-sm);
+}
+.wallet-icon{font-size:20px;}
+.wallet-addr{font-size:13px;color:var(--text-secondary);font-family:monospace;flex:1;overflow:hidden;text-overflow:ellipsis;}
+.wallet-copy{
+  padding:6px 14px;border:1px solid var(--border);border-radius:99px;
+  background:transparent;color:var(--text-secondary);font-size:12px;
+  cursor:pointer;font-family:var(--font);transition:all .2s;
+}
+.wallet-copy:hover{border-color:var(--green);color:var(--green);}
+
+.wallet-balance{
+  display:flex;gap:16px;margin-top:12px;
+}
+.balance-item{
+  padding:10px 16px;background:rgba(255,255,255,0.02);
+  border:1px solid var(--border);border-radius:var(--radius-sm);
+  flex:1;text-align:center;
+}
+.balance-amount{font-size:18px;font-weight:700;}
+.balance-label{font-size:11px;color:var(--text-dim);margin-top:2px;}
+
+/* COMMUNITIES LIST */
+.community-list{display:flex;flex-direction:column;gap:10px;}
+.community-item{
+  display:flex;align-items:center;gap:12px;padding:12px;
+  background:rgba(255,255,255,0.02);border:1px solid var(--border);
+  border-radius:var(--radius-sm);cursor:pointer;transition:all .2s;
+}
+.community-item:hover{border-color:var(--border-hover);background:var(--bg-card-hover);}
+.community-icon{
+  width:40px;height:40px;border-radius:10px;display:flex;
+  align-items:center;justify-content:center;font-size:18px;flex-shrink:0;
+}
+.ci-1{background:linear-gradient(135deg,rgba(184,232,71,0.2),rgba(110,231,183,0.1));}
+.ci-2{background:linear-gradient(135deg,rgba(124,58,237,0.2),rgba(167,139,250,0.1));}
+.ci-3{background:linear-gradient(135deg,rgba(217,119,6,0.2),rgba(252,211,77,0.1));}
+.community-info{flex:1;}
+.community-name{font-size:14px;font-weight:600;}
+.community-members{font-size:12px;color:var(--text-dim);}
+.community-rank{font-size:12px;font-weight:600;color:var(--green);}
+
+/* BADGES */
+.badges-grid{display:flex;gap:10px;flex-wrap:wrap;}
+.badge{
+  width:52px;height:52px;border-radius:12px;
+  background:var(--bg-card);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:24px;transition:all .2s;cursor:default;
+}
+.badge:hover{border-color:var(--green);transform:scale(1.05);}
+.badge.locked{opacity:0.3;filter:grayscale(1);}
+
+.page-nav{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);display:flex;gap:8px;padding:8px 16px;background:var(--bg-glass);border:1px solid var(--border);border-radius:99px;backdrop-filter:blur(12px);z-index:150;}
+.page-nav a{color:var(--text-secondary);text-decoration:none;font-size:12px;font-weight:500;padding:4px 12px;border-radius:99px;transition:all .2s;}
+.page-nav a:hover,.page-nav a.active{background:var(--green);color:#0c0c10;}
+
+@media(max-width:640px){
+  .profile-wrap{padding:24px 16px 100px;}
+  .stats-row{grid-template-columns:repeat(3,1fr);gap:8px;}
+  .stat-num{font-size:20px;}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="../index.html" class="nav-logo">Rankr</a>
+</nav>
+
+<div class="profile-wrap">
+
+  <!-- PROFILE CARD -->
+  <div class="profile-card">
+    <div class="profile-avatar">E</div>
+    <div class="profile-name">Ezven</div>
+    <div class="profile-handle">@ezveng</div>
+    <div class="profile-bio">Builder. Designer. Shipping fast out of Austin TX. EZ Designs × Maiat Protocol × WAA.</div>
+
+    <div class="socials">
+      <a href="#" class="social-link" title="X/Twitter">𝕏</a>
+      <a href="#" class="social-link" title="GitHub">⌨</a>
+      <a href="#" class="social-link" title="Instagram">📷</a>
+      <a href="#" class="social-link" title="Website">🌐</a>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-num">4,820</div>
+        <div class="stat-label">Total XP</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">3</div>
+        <div class="stat-label">Communities</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">12</div>
+        <div class="stat-label">Day Streak</div>
+      </div>
+    </div>
+
+    <div class="xp-section">
+      <div class="xp-header">
+        <span class="xp-level">Level 7</span>
+        <span class="xp-amount">4,820 / 6,500 XP</span>
+      </div>
+      <div class="xp-bar"><div class="xp-fill"></div></div>
+    </div>
+  </div>
+
+  <!-- WALLET -->
+  <div class="section-card">
+    <div class="section-title">💳 Wallet</div>
+    <div class="wallet-address">
+      <span class="wallet-icon">◎</span>
+      <span class="wallet-addr">7xKe...9Bq4</span>
+      <button class="wallet-copy">Copy</button>
+    </div>
+    <div class="wallet-balance">
+      <div class="balance-item">
+        <div class="balance-amount">2.4</div>
+        <div class="balance-label">SOL</div>
+      </div>
+      <div class="balance-item">
+        <div class="balance-amount">142</div>
+        <div class="balance-label">RANKR</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMMUNITIES -->
+  <div class="section-card">
+    <div class="section-title">🏘️ Communities</div>
+    <div class="community-list">
+      <div class="community-item" onclick="location.href='community.html'">
+        <div class="community-icon ci-1">🎨</div>
+        <div class="community-info">
+          <div class="community-name">WAA Design Club</div>
+          <div class="community-members">142 members</div>
+        </div>
+        <div class="community-rank">#1</div>
+      </div>
+      <div class="community-item">
+        <div class="community-icon ci-2">🧠</div>
+        <div class="community-info">
+          <div class="community-name">Solana Builders</div>
+          <div class="community-members">89 members</div>
+        </div>
+        <div class="community-rank">#7</div>
+      </div>
+      <div class="community-item">
+        <div class="community-icon ci-3">🔥</div>
+        <div class="community-info">
+          <div class="community-name">Hackathon Grinders</div>
+          <div class="community-members">234 members</div>
+        </div>
+        <div class="community-rank">#12</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BADGES -->
+  <div class="section-card">
+    <div class="section-title">🏅 Badges</div>
+    <div class="badges-grid">
+      <div class="badge" title="Early Adopter">🌟</div>
+      <div class="badge" title="7-Day Streak">🔥</div>
+      <div class="badge" title="First Post">✍️</div>
+      <div class="badge" title="Top 10">🏆</div>
+      <div class="badge" title="Feedback King">💬</div>
+      <div class="badge locked" title="30-Day Streak">⚡</div>
+      <div class="badge locked" title="Community Creator">👑</div>
+      <div class="badge locked" title="100 Tasks">✅</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="page-nav">
+  <a href="../index.html">Home</a>
+  <a href="community.html">Community</a>
+  <a href="club.html">Club</a>
+  <a href="profile.html" class="active">Profile</a>
+</div>
+
+</body>
+</html>

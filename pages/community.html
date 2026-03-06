@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WAA Design Club — Rankr</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0c0c10;
+  --bg-card: rgba(255,255,255,0.04);
+  --bg-card-hover: rgba(255,255,255,0.07);
+  --bg-glass: rgba(18,18,24,0.85);
+  --border: rgba(255,255,255,0.06);
+  --border-hover: rgba(255,255,255,0.12);
+  --green: #b8e847;
+  --green-dim: rgba(184,232,71,0.15);
+  --green-glow: rgba(184,232,71,0.25);
+  --text: #f0f0f2;
+  --text-secondary: #9a9aa8;
+  --text-dim: #5c5c6e;
+  --radius: 16px;
+  --radius-sm: 10px;
+  --font: 'Inter', -apple-system, sans-serif;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:var(--font); -webkit-font-smoothing:antialiased; }
+
+/* ── NAV ── */
+nav {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:16px 32px; position:sticky; top:0; z-index:100;
+  background:rgba(12,12,16,0.8); backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+}
+.nav-logo { font-size:20px; font-weight:800; letter-spacing:-0.5px; background:linear-gradient(135deg,var(--green),#6ee7b7); -webkit-background-clip:text; -webkit-text-fill-color:transparent; text-decoration:none; }
+.nav-right { display:flex; align-items:center; gap:16px; }
+.nav-avatar { width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,#7c3aed,#a78bfa); }
+
+/* ── COMMUNITY HEADER ── */
+.comm-header {
+  padding:32px 32px 0; max-width:1100px; margin:0 auto;
+}
+.comm-banner {
+  width:100%; height:160px; border-radius:var(--radius);
+  background:linear-gradient(135deg, rgba(184,232,71,0.15), rgba(110,231,183,0.08));
+  margin-bottom:20px; position:relative; overflow:hidden;
+}
+.comm-banner::after {
+  content:''; position:absolute; inset:0;
+  background:radial-gradient(circle at 30% 50%, rgba(184,232,71,0.12), transparent 60%);
+}
+.comm-info { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; }
+.comm-title { font-size:28px; font-weight:800; letter-spacing:-0.5px; }
+.comm-join {
+  padding:10px 28px; border-radius:99px; border:none;
+  background:var(--green); color:#0c0c10; font-size:14px; font-weight:600;
+  cursor:pointer; font-family:var(--font); transition:all .2s;
+}
+.comm-join:hover { box-shadow:0 4px 20px var(--green-glow); transform:translateY(-1px); }
+.comm-desc { color:var(--text-secondary); font-size:14px; line-height:1.6; margin-bottom:12px; max-width:600px; }
+.comm-stats { display:flex; gap:20px; margin-bottom:8px; }
+.comm-stat { font-size:13px; color:var(--text-dim); }
+.comm-stat strong { color:var(--text); font-weight:600; }
+.comm-viewers {
+  font-size:12px; color:var(--text-dim); display:flex; align-items:center; gap:6px;
+  margin-bottom:24px;
+}
+.comm-viewers .dot { width:6px; height:6px; border-radius:50%; background:var(--green); display:inline-block; }
+
+/* ── LAYOUT ── */
+.content-layout {
+  display:grid; grid-template-columns:1fr 300px;
+  gap:24px; padding:0 32px 80px; max-width:1100px; margin:0 auto;
+}
+
+/* ── POSTS ── */
+.section-label { font-size:12px; font-weight:600; color:var(--text-dim); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px; }
+.post {
+  background:var(--bg-card); border:1px solid var(--border);
+  border-radius:var(--radius); padding:20px; margin-bottom:14px;
+  transition:all .2s; cursor:pointer;
+}
+.post:hover { border-color:var(--border-hover); background:var(--bg-card-hover); }
+.post-author { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+.post-avatar { width:32px; height:32px; border-radius:50%; }
+.post-avatar.av1 { background:linear-gradient(135deg,#7c3aed,#a78bfa); }
+.post-avatar.av2 { background:linear-gradient(135deg,#059669,#6ee7b7); }
+.post-avatar.av3 { background:linear-gradient(135deg,#d97706,#fcd34d); }
+.post-name { font-size:14px; font-weight:600; }
+.post-time { font-size:12px; color:var(--text-dim); }
+.post-text { font-size:14px; line-height:1.6; color:var(--text-secondary); margin-bottom:12px; }
+.post-image {
+  width:100%; aspect-ratio:16/9; border-radius:var(--radius-sm);
+  margin-bottom:12px; object-fit:cover;
+}
+.post-image-placeholder {
+  width:100%; aspect-ratio:16/9; border-radius:var(--radius-sm);
+  background:linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+  margin-bottom:12px; display:flex; align-items:center; justify-content:center;
+  color:var(--text-dim); font-size:24px;
+}
+.post-actions { display:flex; gap:16px; }
+.post-action {
+  font-size:13px; color:var(--text-dim); display:flex; align-items:center; gap:4px;
+  cursor:pointer; transition:color .2s;
+}
+.post-action:hover { color:var(--text); }
+
+/* ── SIDEBAR ── */
+.sidebar { display:flex; flex-direction:column; gap:20px; }
+
+/* Leaderboard */
+.lb-card {
+  background:var(--bg-card); border:1px solid var(--border);
+  border-radius:var(--radius); padding:20px;
+}
+.lb-title { font-size:14px; font-weight:700; margin-bottom:16px; }
+.lb-entry {
+  display:flex; align-items:center; gap:12px; padding:8px 0;
+  border-bottom:1px solid var(--border);
+}
+.lb-entry:last-child { border-bottom:none; }
+.lb-rank {
+  width:24px; height:24px; border-radius:50%; display:flex;
+  align-items:center; justify-content:center;
+  font-size:12px; font-weight:700; flex-shrink:0;
+}
+.lb-rank.r1 { background:linear-gradient(135deg,#fbbf24,#f59e0b); color:#0c0c10; }
+.lb-rank.r2 { background:linear-gradient(135deg,#9ca3af,#6b7280); color:#fff; }
+.lb-rank.r3 { background:linear-gradient(135deg,#d97706,#b45309); color:#fff; }
+.lb-rank.r4 { background:var(--bg-card); color:var(--text-dim); border:1px solid var(--border); }
+.lb-avatar { width:28px; height:28px; border-radius:50%; flex-shrink:0; }
+.lb-avatar.av1 { background:linear-gradient(135deg,#7c3aed,#a78bfa); }
+.lb-avatar.av2 { background:linear-gradient(135deg,#059669,#6ee7b7); }
+.lb-avatar.av3 { background:linear-gradient(135deg,#d97706,#fcd34d); }
+.lb-avatar.av4 { background:linear-gradient(135deg,#dc2626,#fca5a5); }
+.lb-info { flex:1; min-width:0; }
+.lb-name { font-size:13px; font-weight:600; }
+.lb-xp { font-size:11px; color:var(--text-dim); }
+
+/* Tasks */
+.tasks-card {
+  background:var(--bg-card); border:1px solid var(--border);
+  border-radius:var(--radius); padding:20px;
+}
+.task-item {
+  display:flex; align-items:center; gap:10px; padding:10px 0;
+  border-bottom:1px solid var(--border);
+}
+.task-item:last-child { border-bottom:none; }
+.task-check {
+  width:20px; height:20px; border-radius:6px;
+  border:2px solid var(--border); flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; transition:all .2s;
+}
+.task-check:hover { border-color:var(--green); }
+.task-check.done { background:var(--green); border-color:var(--green); }
+.task-check.done::after { content:'✓'; color:#0c0c10; font-size:12px; font-weight:700; }
+.task-info { flex:1; }
+.task-name { font-size:13px; font-weight:500; }
+.task-xp { font-size:11px; color:var(--green); font-weight:600; }
+
+/* ── PROTOTYPE NAV ── */
+.page-nav {
+  position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
+  display:flex; gap:8px; padding:8px 16px;
+  background:var(--bg-glass); border:1px solid var(--border);
+  border-radius:99px; backdrop-filter:blur(12px); z-index:150;
+}
+.page-nav a { color:var(--text-secondary); text-decoration:none; font-size:12px; font-weight:500; padding:4px 12px; border-radius:99px; transition:all .2s; }
+.page-nav a:hover, .page-nav a.active { background:var(--green); color:#0c0c10; }
+
+@media (max-width:768px) {
+  .content-layout { grid-template-columns:1fr; }
+  .comm-header { padding:20px 16px 0; }
+  .content-layout { padding:0 16px 80px; }
+  nav { padding:12px 16px; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="../index.html" class="nav-logo">Rankr</a>
+  <div class="nav-right"><div class="nav-avatar"></div></div>
+</nav>
+
+<!-- COMMUNITY HEADER -->
+<div class="comm-header">
+  <div class="comm-banner"></div>
+  <div class="comm-info">
+    <div>
+      <div class="comm-title">WAA Design Club</div>
+    </div>
+    <button class="comm-join">Join</button>
+  </div>
+  <div class="comm-desc">A community for designers, builders, and creatives who want to level up their craft. Weekly challenges, portfolio reviews, and real feedback from real people.</div>
+  <div class="comm-stats">
+    <div class="comm-stat"><strong>142</strong> members</div>
+    <div class="comm-stat"><strong>28</strong> online</div>
+    <div class="comm-stat"><strong>1,240</strong> XP earned this week</div>
+  </div>
+  <div class="comm-viewers">
+    <span class="dot"></span> Currently looking at: <strong>Ez, Laksh, +3 others</strong>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div class="content-layout">
+
+  <!-- LEFT: POSTS -->
+  <div>
+    <div class="section-label">Recent Posts</div>
+
+    <div class="post" onclick="location.href='club.html'">
+      <div class="post-author">
+        <div class="post-avatar av1"></div>
+        <div><div class="post-name">Ezven</div><div class="post-time">2h ago</div></div>
+      </div>
+      <div class="post-text">Just shipped the new jersey page with a split-screen layout. Sticky showcase on the left, scrollable form on the right. What do y'all think?</div>
+      <div class="post-image-placeholder">🖼️</div>
+      <div class="post-actions">
+        <span class="post-action">💬 12</span>
+        <span class="post-action">🔥 34</span>
+        <span class="post-action">🔖</span>
+      </div>
+    </div>
+
+    <div class="post">
+      <div class="post-author">
+        <div class="post-avatar av2"></div>
+        <div><div class="post-name">Laksh</div><div class="post-time">5h ago</div></div>
+      </div>
+      <div class="post-text">Working on the predesigns page. Should we go with a masonry grid or uniform cards? Leaning masonry for visual impact.</div>
+      <div class="post-actions">
+        <span class="post-action">💬 8</span>
+        <span class="post-action">🔥 19</span>
+        <span class="post-action">🔖</span>
+      </div>
+    </div>
+
+    <div class="post">
+      <div class="post-author">
+        <div class="post-avatar av3"></div>
+        <div><div class="post-name">Shannon T.</div><div class="post-time">1d ago</div></div>
+      </div>
+      <div class="post-text">Portfolio drop — here's my latest motocross wrap design. Went full neo-brutalist on this one 🔥</div>
+      <div class="post-image-placeholder">🎨</div>
+      <div class="post-actions">
+        <span class="post-action">💬 21</span>
+        <span class="post-action">🔥 67</span>
+        <span class="post-action">🔖</span>
+      </div>
+    </div>
+
+    <!-- TASKS SECTION (mobile - below posts) -->
+    <div class="section-label" style="margin-top:24px;">Tasks</div>
+    <div class="tasks-card" style="display:none;"><!-- shown on mobile via media query if needed --></div>
+  </div>
+
+  <!-- RIGHT: SIDEBAR -->
+  <div class="sidebar">
+
+    <!-- LEADERBOARD -->
+    <div class="lb-card">
+      <div class="lb-title">🏆 Leaderboard</div>
+      <div class="lb-entry">
+        <div class="lb-rank r1">1</div>
+        <div class="lb-avatar av1"></div>
+        <div class="lb-info"><div class="lb-name">Ezven</div><div class="lb-xp">4,820 XP</div></div>
+      </div>
+      <div class="lb-entry">
+        <div class="lb-rank r2">2</div>
+        <div class="lb-avatar av2"></div>
+        <div class="lb-info"><div class="lb-name">Laksh</div><div class="lb-xp">3,940 XP</div></div>
+      </div>
+      <div class="lb-entry">
+        <div class="lb-rank r3">3</div>
+        <div class="lb-avatar av3"></div>
+        <div class="lb-info"><div class="lb-name">Shannon T.</div><div class="lb-xp">2,180 XP</div></div>
+      </div>
+      <div class="lb-entry">
+        <div class="lb-rank r4">4</div>
+        <div class="lb-avatar av4"></div>
+        <div class="lb-info"><div class="lb-name">JhiNResH</div><div class="lb-xp">1,650 XP</div></div>
+      </div>
+    </div>
+
+    <!-- TASKS -->
+    <div class="tasks-card">
+      <div class="section-label">Weekly Tasks</div>
+      <div class="task-item">
+        <div class="task-check done"></div>
+        <div class="task-info"><div class="task-name">Share a WIP design</div><div class="task-xp">+20 XP</div></div>
+      </div>
+      <div class="task-item">
+        <div class="task-check"></div>
+        <div class="task-info"><div class="task-name">Give feedback on 3 posts</div><div class="task-xp">+30 XP</div></div>
+      </div>
+      <div class="task-item">
+        <div class="task-check"></div>
+        <div class="task-info"><div class="task-name">Complete the color theory quiz</div><div class="task-xp">+15 XP</div></div>
+      </div>
+      <div class="task-item">
+        <div class="task-check"></div>
+        <div class="task-info"><div class="task-name">Attend live portfolio review</div><div class="task-xp">+50 XP</div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- PROTOTYPE NAV -->
+<div class="page-nav">
+  <a href="../index.html">Home</a>
+  <a href="community.html" class="active">Community</a>
+  <a href="club.html">Club</a>
+  <a href="profile.html">Profile</a>
+</div>
+
+<script>
+document.querySelectorAll('.task-check').forEach(check => {
+  check.addEventListener('click', () => check.classList.toggle('done'));
+});
+</script>
+
+</body>
+</html>

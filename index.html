@@ -1,979 +1,411 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RANKR — Command Center</title>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg-primary: #0a0a0f;
-            --bg-secondary: #0f1117;
-            --bg-panel: #12141c;
-            --border: rgba(255,255,255,0.06);
-            --border-active: rgba(56, 189, 148, 0.3);
-            --accent: #38bd94;
-            --accent-dim: rgba(56, 189, 148, 0.15);
-            --accent-glow: rgba(56, 189, 148, 0.4);
-            --text-primary: #e8eaed;
-            --text-secondary: #8b8f98;
-            --text-dim: #5a5e68;
-            --danger: #e54d4d;
-            --warning: #e5a84d;
-            --mono: 'JetBrains Mono', monospace;
-            --sans: 'Inter', sans-serif;
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            font-family: var(--sans);
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            min-height: 100vh;
-            -webkit-font-smoothing: antialiased;
-            overflow-x: hidden;
-        }
-
-        /* ── SCANLINE OVERLAY (CRT effect) ── */
-        body::after {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background: repeating-linear-gradient(
-                0deg,
-                transparent,
-                transparent 2px,
-                rgba(0,0,0,0.03) 2px,
-                rgba(0,0,0,0.03) 4px
-            );
-            pointer-events: none;
-            z-index: 9999;
-        }
-
-        /* ── GRID BACKGROUND ── */
-        body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background-image:
-                linear-gradient(rgba(56, 189, 148, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(56, 189, 148, 0.03) 1px, transparent 1px);
-            background-size: 60px 60px;
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        /* ── TOP BAR ── */
-        .topbar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 48px;
-            background: rgba(10, 10, 15, 0.95);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 20px;
-            z-index: 100;
-        }
-
-        .topbar-left {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .logo {
-            font-family: var(--mono);
-            font-weight: 700;
-            font-size: 13px;
-            letter-spacing: 4px;
-            color: var(--accent);
-            text-transform: uppercase;
-        }
-
-        .logo-dot {
-            display: inline-block;
-            width: 6px;
-            height: 6px;
-            background: var(--accent);
-            border-radius: 50%;
-            margin-left: 4px;
-            animation: pulse-dot 2s ease-in-out infinite;
-            box-shadow: 0 0 8px var(--accent-glow);
-        }
-
-        @keyframes pulse-dot {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.4; }
-        }
-
-        .topbar-status {
-            font-family: var(--mono);
-            font-size: 11px;
-            color: var(--text-dim);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .status-live {
-            color: var(--accent);
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .status-live::before {
-            content: '';
-            width: 5px;
-            height: 5px;
-            background: var(--accent);
-            border-radius: 50%;
-            box-shadow: 0 0 6px var(--accent-glow);
-        }
-
-        .topbar-right {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .topbar-nav {
-            display: flex;
-            gap: 2px;
-        }
-
-        .topbar-nav a {
-            font-family: var(--mono);
-            font-size: 11px;
-            color: var(--text-secondary);
-            text-decoration: none;
-            padding: 6px 12px;
-            border-radius: 4px;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            transition: all 0.2s;
-        }
-
-        .topbar-nav a:hover {
-            color: var(--text-primary);
-            background: rgba(255,255,255,0.04);
-        }
-
-        .topbar-nav a.active {
-            color: var(--accent);
-            background: var(--accent-dim);
-        }
-
-        .user-badge {
-            font-family: var(--mono);
-            font-size: 11px;
-            color: var(--text-secondary);
-            background: var(--bg-panel);
-            border: 1px solid var(--border);
-            padding: 4px 10px;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .user-badge .rank {
-            color: var(--accent);
-            font-weight: 600;
-        }
-
-        /* ── MAIN LAYOUT ── */
-        .main {
-            margin-top: 48px;
-            display: grid;
-            grid-template-columns: 1fr 320px;
-            grid-template-rows: auto auto 1fr;
-            gap: 1px;
-            background: var(--border);
-            min-height: calc(100vh - 48px);
-            position: relative;
-            z-index: 1;
-        }
-
-        /* ── PANEL BASE ── */
-        .panel {
-            background: var(--bg-secondary);
-            padding: 20px;
-            position: relative;
-        }
-
-        .panel-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 16px;
-        }
-
-        .panel-title {
-            font-family: var(--mono);
-            font-size: 10px;
-            font-weight: 600;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            color: var(--text-dim);
-        }
-
-        .panel-badge {
-            font-family: var(--mono);
-            font-size: 10px;
-            color: var(--accent);
-            background: var(--accent-dim);
-            padding: 2px 8px;
-            border-radius: 3px;
-        }
-
-        /* ── HERO STATS (top full-width) ── */
-        .hero-stats {
-            grid-column: 1 / -1;
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 1px;
-            background: var(--border);
-        }
-
-        .stat-card {
-            background: var(--bg-secondary);
-            padding: 20px;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .stat-card::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 20%;
-            right: 20%;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, var(--accent-glow), transparent);
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .stat-card:hover::after {
-            opacity: 1;
-        }
-
-        .stat-label {
-            font-family: var(--mono);
-            font-size: 9px;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            color: var(--text-dim);
-            margin-bottom: 8px;
-        }
-
-        .stat-value {
-            font-family: var(--mono);
-            font-size: 28px;
-            font-weight: 700;
-            color: var(--text-primary);
-            line-height: 1;
-            margin-bottom: 6px;
-        }
-
-        .stat-value.accent {
-            color: var(--accent);
-            text-shadow: 0 0 20px var(--accent-glow);
-        }
-
-        .stat-change {
-            font-family: var(--mono);
-            font-size: 10px;
-        }
-
-        .stat-change.up { color: var(--accent); }
-        .stat-change.down { color: var(--danger); }
-
-        /* ── ACTIVITY FEED (left column) ── */
-        .activity-feed {
-            grid-column: 1;
-        }
-
-        .feed-item {
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            padding: 12px 0;
-            border-bottom: 1px solid var(--border);
-            transition: background 0.2s;
-        }
-
-        .feed-item:last-child {
-            border-bottom: none;
-        }
-
-        .feed-item:hover {
-            background: rgba(255,255,255,0.02);
-            margin: 0 -20px;
-            padding: 12px 20px;
-        }
-
-        .feed-time {
-            font-family: var(--mono);
-            font-size: 10px;
-            color: var(--text-dim);
-            min-width: 50px;
-            padding-top: 2px;
-        }
-
-        .feed-icon {
-            width: 28px;
-            height: 28px;
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 13px;
-            flex-shrink: 0;
-        }
-
-        .feed-icon.quest { background: var(--accent-dim); }
-        .feed-icon.rank { background: rgba(229, 168, 77, 0.15); }
-        .feed-icon.badge { background: rgba(168, 85, 247, 0.15); }
-        .feed-icon.join { background: rgba(59, 130, 246, 0.15); }
-
-        .feed-content {
-            flex: 1;
-        }
-
-        .feed-title {
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--text-primary);
-            margin-bottom: 2px;
-        }
-
-        .feed-title .highlight {
-            color: var(--accent);
-        }
-
-        .feed-desc {
-            font-size: 12px;
-            color: var(--text-secondary);
-        }
-
-        .feed-xp {
-            font-family: var(--mono);
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--accent);
-            background: var(--accent-dim);
-            padding: 2px 8px;
-            border-radius: 3px;
-            flex-shrink: 0;
-            align-self: center;
-        }
-
-        /* ── LEADERBOARD (right sidebar) ── */
-        .leaderboard {
-            grid-column: 2;
-            grid-row: 2 / 4;
-            border-left: 1px solid var(--border);
-        }
-
-        .leader-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px 0;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .leader-item:last-child {
-            border-bottom: none;
-        }
-
-        .leader-rank {
-            font-family: var(--mono);
-            font-size: 11px;
-            font-weight: 700;
-            color: var(--text-dim);
-            width: 24px;
-            text-align: center;
-        }
-
-        .leader-rank.top1 { color: var(--accent); text-shadow: 0 0 8px var(--accent-glow); }
-        .leader-rank.top2 { color: var(--warning); }
-        .leader-rank.top3 { color: #c97a3a; }
-
-        .leader-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 6px;
-            background: var(--bg-panel);
-            border: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-        }
-
-        .leader-info {
-            flex: 1;
-        }
-
-        .leader-name {
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .leader-community {
-            font-size: 10px;
-            color: var(--text-dim);
-        }
-
-        .leader-xp {
-            font-family: var(--mono);
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .leader-bar {
-            width: 60px;
-            height: 3px;
-            background: var(--bg-panel);
-            border-radius: 2px;
-            overflow: hidden;
-            margin-top: 3px;
-        }
-
-        .leader-bar-fill {
-            height: 100%;
-            background: var(--accent);
-            border-radius: 2px;
-            box-shadow: 0 0 6px var(--accent-glow);
-        }
-
-        /* ── QUESTS PANEL ── */
-        .quests-panel {
-            grid-column: 1;
-        }
-
-        .quest-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 10px 12px;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            margin-bottom: 8px;
-            transition: all 0.2s;
-            cursor: pointer;
-        }
-
-        .quest-item:hover {
-            border-color: var(--border-active);
-            background: rgba(56, 189, 148, 0.03);
-        }
-
-        .quest-status {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            flex-shrink: 0;
-        }
-
-        .quest-status.active {
-            background: var(--accent);
-            box-shadow: 0 0 8px var(--accent-glow);
-        }
-
-        .quest-status.locked {
-            background: var(--text-dim);
-        }
-
-        .quest-status.complete {
-            background: var(--accent);
-        }
-
-        .quest-info {
-            flex: 1;
-        }
-
-        .quest-name {
-            font-size: 12px;
-            font-weight: 500;
-            color: var(--text-primary);
-            margin-bottom: 2px;
-        }
-
-        .quest-meta {
-            font-family: var(--mono);
-            font-size: 10px;
-            color: var(--text-dim);
-        }
-
-        .quest-reward {
-            font-family: var(--mono);
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--accent);
-        }
-
-        .quest-progress {
-            width: 100%;
-            height: 2px;
-            background: var(--bg-panel);
-            border-radius: 1px;
-            margin-top: 6px;
-        }
-
-        .quest-progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--accent), var(--accent-glow));
-            border-radius: 1px;
-            transition: width 0.5s ease;
-        }
-
-        /* ── COMMUNITIES MINI GRID ── */
-        .communities-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 8px;
-            margin-top: 8px;
-        }
-
-        .community-card {
-            background: var(--bg-panel);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 14px;
-            cursor: pointer;
-            transition: all 0.2s;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .community-card:hover {
-            border-color: var(--border-active);
-            transform: translateY(-1px);
-        }
-
-        .community-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, var(--accent), transparent);
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .community-card:hover::before {
-            opacity: 1;
-        }
-
-        .community-icon {
-            font-size: 20px;
-            margin-bottom: 8px;
-        }
-
-        .community-name {
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 4px;
-        }
-
-        .community-members {
-            font-family: var(--mono);
-            font-size: 10px;
-            color: var(--text-dim);
-        }
-
-        .community-xp {
-            font-family: var(--mono);
-            font-size: 16px;
-            font-weight: 700;
-            color: var(--accent);
-            margin-top: 8px;
-        }
-
-        /* ── TERMINAL LOG ── */
-        .terminal-log {
-            grid-column: 1 / -1;
-            background: var(--bg-primary);
-            padding: 12px 20px;
-            font-family: var(--mono);
-            font-size: 10px;
-            color: var(--text-dim);
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            border-top: 1px solid var(--border);
-        }
-
-        .terminal-prompt {
-            color: var(--accent);
-        }
-
-        .terminal-text {
-            opacity: 0.6;
-        }
-
-        .terminal-cursor {
-            display: inline-block;
-            width: 7px;
-            height: 14px;
-            background: var(--accent);
-            animation: blink 1s step-end infinite;
-            vertical-align: middle;
-            margin-left: 2px;
-        }
-
-        @keyframes blink {
-            50% { opacity: 0; }
-        }
-
-        /* ── RESPONSIVE ── */
-        @media (max-width: 768px) {
-            .main {
-                grid-template-columns: 1fr;
-            }
-            .hero-stats {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            .leaderboard {
-                grid-column: 1;
-                grid-row: auto;
-                border-left: none;
-            }
-            .communities-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rankr</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0c0c10;
+  --bg-card: rgba(255,255,255,0.04);
+  --bg-card-hover: rgba(255,255,255,0.07);
+  --bg-glass: rgba(18,18,24,0.85);
+  --border: rgba(255,255,255,0.06);
+  --border-hover: rgba(255,255,255,0.12);
+  --green: #b8e847;
+  --green-dim: rgba(184,232,71,0.15);
+  --green-glow: rgba(184,232,71,0.25);
+  --text: #f0f0f2;
+  --text-secondary: #9a9aa8;
+  --text-dim: #5c5c6e;
+  --radius: 16px;
+  --radius-sm: 10px;
+  --font: 'Inter', -apple-system, sans-serif;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:var(--font); -webkit-font-smoothing:antialiased; min-height:100vh; }
+
+/* ── NAV ── */
+nav {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:16px 32px;
+  position:sticky; top:0; z-index:100;
+  background:rgba(12,12,16,0.8); backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+}
+.nav-logo {
+  font-size:20px; font-weight:800; letter-spacing:-0.5px;
+  background:linear-gradient(135deg, var(--green), #6ee7b7);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+}
+.nav-links { display:flex; gap:24px; align-items:center; }
+.nav-links a {
+  color:var(--text-secondary); text-decoration:none; font-size:14px; font-weight:500;
+  transition:color .2s;
+}
+.nav-links a:hover { color:var(--text); }
+.nav-btn {
+  background:var(--green); color:#0c0c10; border:none; padding:8px 20px;
+  border-radius:99px; font-size:13px; font-weight:600; cursor:pointer;
+  transition:all .2s;
+}
+.nav-btn:hover { transform:translateY(-1px); box-shadow:0 4px 20px var(--green-glow); }
+.nav-btn-outline {
+  background:transparent; border:1px solid var(--border); color:var(--text);
+  padding:8px 20px; border-radius:99px; font-size:13px; font-weight:500; cursor:pointer;
+  transition:all .2s;
+}
+.nav-btn-outline:hover { border-color:var(--text-secondary); }
+
+/* ── HERO ── */
+.hero {
+  text-align:center; padding:80px 32px 40px; max-width:720px; margin:0 auto;
+}
+.hero h1 {
+  font-size:48px; font-weight:800; letter-spacing:-1.5px; line-height:1.1;
+  margin-bottom:16px;
+}
+.hero h1 span {
+  background:linear-gradient(135deg, var(--green), #6ee7b7);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+}
+.hero p {
+  color:var(--text-secondary); font-size:17px; line-height:1.6; max-width:520px; margin:0 auto 32px;
+}
+
+/* ── SEARCH ── */
+.search-wrap {
+  max-width:560px; margin:0 auto 48px; position:relative;
+}
+.search-wrap input {
+  width:100%; padding:14px 20px 14px 48px;
+  background:var(--bg-card); border:1px solid var(--border);
+  border-radius:99px; color:var(--text); font-size:15px; font-family:var(--font);
+  outline:none; transition:all .2s;
+}
+.search-wrap input::placeholder { color:var(--text-dim); }
+.search-wrap input:focus { border-color:rgba(184,232,71,0.3); box-shadow:0 0 0 3px var(--green-dim); }
+.search-icon {
+  position:absolute; left:18px; top:50%; transform:translateY(-50%);
+  color:var(--text-dim); font-size:18px;
+}
+
+/* ── TABS ── */
+.tabs {
+  display:flex; gap:4px; justify-content:center; margin-bottom:40px;
+}
+.tab {
+  padding:8px 24px; border-radius:99px; font-size:14px; font-weight:500;
+  cursor:pointer; transition:all .2s; border:none; font-family:var(--font);
+  background:transparent; color:var(--text-secondary);
+}
+.tab:hover { background:var(--bg-card); color:var(--text); }
+.tab.active {
+  background:var(--green); color:#0c0c10; font-weight:600;
+}
+
+/* ── GRID ── */
+.grid {
+  display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr));
+  gap:20px; padding:0 32px 80px; max-width:1200px; margin:0 auto;
+}
+.card {
+  background:var(--bg-card); border:1px solid var(--border);
+  border-radius:var(--radius); overflow:hidden; cursor:pointer;
+  transition:all .25s ease;
+}
+.card:hover {
+  border-color:var(--border-hover); background:var(--bg-card-hover);
+  transform:translateY(-3px);
+  box-shadow:0 8px 32px rgba(0,0,0,0.3);
+}
+.card-img {
+  width:100%; aspect-ratio:16/10; object-fit:cover;
+  background:linear-gradient(135deg, rgba(184,232,71,0.1), rgba(110,231,183,0.05));
+  display:flex; align-items:center; justify-content:center;
+}
+.card-img-placeholder {
+  width:100%; aspect-ratio:16/10;
+  display:flex; align-items:center; justify-content:center;
+  font-size:32px; color:var(--text-dim);
+}
+.card-img-placeholder.type-img { background:linear-gradient(135deg, #1a1a2e, #16213e); }
+.card-img-placeholder.type-png { background:linear-gradient(135deg, #1a2e1a, #162e21); }
+.card-img-placeholder.type-gif { background:linear-gradient(135deg, #2e1a2e, #2e1621); }
+
+.card-body { padding:14px 16px 16px; }
+.card-title { font-size:15px; font-weight:600; margin-bottom:4px; }
+.card-meta {
+  display:flex; align-items:center; gap:8px;
+  font-size:12px; color:var(--text-dim);
+}
+.card-tag {
+  display:inline-block; padding:2px 8px; border-radius:99px;
+  background:var(--green-dim); color:var(--green);
+  font-size:11px; font-weight:600;
+}
+.card-members { display:flex; align-items:center; gap:4px; }
+.card-avatar-stack { display:flex; }
+.card-avatar-stack span {
+  width:20px; height:20px; border-radius:50%;
+  border:2px solid var(--bg); display:inline-block; margin-left:-6px;
+}
+.card-avatar-stack span:first-child { margin-left:0; }
+.card-avatar-stack .a1 { background:linear-gradient(135deg, #7c3aed, #a78bfa); }
+.card-avatar-stack .a2 { background:linear-gradient(135deg, #059669, #6ee7b7); }
+.card-avatar-stack .a3 { background:linear-gradient(135deg, #d97706, #fcd34d); }
+.card-avatar-stack .a4 { background:linear-gradient(135deg, #dc2626, #fca5a5); }
+
+/* ── ACCESS CODE MODAL ── */
+.modal-overlay {
+  display:none; position:fixed; inset:0; z-index:200;
+  background:rgba(0,0,0,0.7); backdrop-filter:blur(8px);
+  align-items:center; justify-content:center;
+}
+.modal-overlay.show { display:flex; }
+.modal {
+  background:var(--bg-glass); border:1px solid var(--border);
+  border-radius:20px; padding:48px 40px; text-align:center;
+  max-width:400px; width:90%;
+  box-shadow:0 24px 64px rgba(0,0,0,0.5);
+}
+.modal h2 { font-size:24px; font-weight:700; margin-bottom:8px; }
+.modal p { color:var(--text-secondary); font-size:14px; margin-bottom:28px; }
+.code-input-group {
+  display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:24px;
+}
+.code-segment {
+  display:flex; gap:4px;
+}
+.code-input {
+  width:40px; height:48px; text-align:center;
+  background:var(--bg-card); border:1px solid var(--border);
+  border-radius:var(--radius-sm); color:var(--text); font-size:20px;
+  font-family:var(--font); font-weight:700; outline:none;
+  transition:border-color .2s;
+}
+.code-input:focus { border-color:var(--green); box-shadow:0 0 0 2px var(--green-dim); }
+.code-dash { color:var(--text-dim); font-size:24px; font-weight:300; }
+.modal-submit {
+  width:100%; padding:12px; border:none; border-radius:99px;
+  background:var(--green); color:#0c0c10; font-size:14px; font-weight:600;
+  cursor:pointer; font-family:var(--font); transition:all .2s;
+  margin-bottom:16px;
+}
+.modal-submit:hover { box-shadow:0 4px 20px var(--green-glow); }
+.modal-waitlist {
+  color:var(--text-dim); font-size:13px;
+}
+.modal-waitlist a {
+  color:var(--green); text-decoration:none; font-weight:500;
+}
+.modal-waitlist a:hover { text-decoration:underline; }
+
+/* ── PAGE LINKS (temp nav between prototype pages) ── */
+.page-nav {
+  position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
+  display:flex; gap:8px; padding:8px 16px;
+  background:var(--bg-glass); border:1px solid var(--border);
+  border-radius:99px; backdrop-filter:blur(12px); z-index:150;
+}
+.page-nav a {
+  color:var(--text-secondary); text-decoration:none; font-size:12px;
+  font-weight:500; padding:4px 12px; border-radius:99px; transition:all .2s;
+}
+.page-nav a:hover, .page-nav a.active { background:var(--green); color:#0c0c10; }
+
+/* ── RESPONSIVE ── */
+@media (max-width:768px) {
+  nav { padding:12px 16px; }
+  .hero { padding:48px 20px 24px; }
+  .hero h1 { font-size:32px; }
+  .grid { padding:0 16px 80px; grid-template-columns:repeat(auto-fill, minmax(240px,1fr)); gap:14px; }
+  .search-wrap { margin:0 16px 36px; }
+}
+</style>
 </head>
 <body>
 
-    <!-- TOP BAR -->
-    <div class="topbar">
-        <div class="topbar-left">
-            <div class="logo">RANKR<span class="logo-dot"></span></div>
-            <div class="topbar-status">
-                <span class="status-live">LIVE</span>
-                <span>SYS:NOMINAL</span>
-                <span>·</span>
-                <span>03.02.26 — 12:30:00 CST</span>
-            </div>
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">Rankr</div>
+  <div class="nav-links">
+    <a href="#" onclick="showModal()">Access Code</a>
+    <button class="nav-btn-outline" onclick="location.href='pages/login.html'">Log in</button>
+    <button class="nav-btn" onclick="location.href='pages/signup.html'">Sign up</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <h1>Where communities <span>level up</span></h1>
+  <p>Join communities, complete tasks, earn XP, and climb the leaderboard. Your progress, visible and verifiable.</p>
+</section>
+
+<!-- SEARCH -->
+<div class="search-wrap">
+  <span class="search-icon">⌕</span>
+  <input type="text" placeholder="Search communities...">
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab active">Discover</button>
+  <button class="tab">My Communities</button>
+</div>
+
+<!-- GRID -->
+<div class="grid">
+
+  <div class="card" onclick="location.href='pages/community.html'">
+    <div class="card-img-placeholder type-img">🎨</div>
+    <div class="card-body">
+      <div class="card-title">WAA Design Club</div>
+      <div class="card-meta">
+        <span class="card-tag">Design</span>
+        <div class="card-members">
+          <div class="card-avatar-stack"><span class="a1"></span><span class="a2"></span><span class="a3"></span></div>
+          <span>142 members</span>
         </div>
-        <div class="topbar-right">
-            <nav class="topbar-nav">
-                <a href="#" class="active">DASHBOARD</a>
-                <a href="#">COMMUNITIES</a>
-                <a href="#">QUESTS</a>
-                <a href="#">LEADERBOARD</a>
-            </nav>
-            <div class="user-badge">
-                <span class="rank">#4</span>
-                <span>ez.rankr</span>
-            </div>
-        </div>
+      </div>
     </div>
+  </div>
 
-    <!-- MAIN GRID -->
-    <div class="main">
-
-        <!-- HERO STATS BAR -->
-        <div class="hero-stats">
-            <div class="stat-card">
-                <div class="stat-label">Total XP</div>
-                <div class="stat-value accent">12,847</div>
-                <div class="stat-change up">↑ 340 today</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Global Rank</div>
-                <div class="stat-value">#4</div>
-                <div class="stat-change up">↑ 2 this week</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Quests Done</div>
-                <div class="stat-value">47</div>
-                <div class="stat-change up">3 active</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Communities</div>
-                <div class="stat-value">6</div>
-                <div class="stat-change">2 invites pending</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Streak</div>
-                <div class="stat-value accent">14d</div>
-                <div class="stat-change up">🔥 personal best</div>
-            </div>
+  <div class="card">
+    <div class="card-img-placeholder type-png">🧠</div>
+    <div class="card-body">
+      <div class="card-title">Solana Builders</div>
+      <div class="card-meta">
+        <span class="card-tag">Dev</span>
+        <div class="card-members">
+          <div class="card-avatar-stack"><span class="a2"></span><span class="a4"></span><span class="a1"></span></div>
+          <span>89 members</span>
         </div>
-
-        <!-- ACTIVITY FEED -->
-        <div class="panel activity-feed">
-            <div class="panel-header">
-                <div class="panel-title">Activity Feed</div>
-                <div class="panel-badge">LIVE</div>
-            </div>
-
-            <div class="feed-item">
-                <div class="feed-time">2m</div>
-                <div class="feed-icon quest">⚡</div>
-                <div class="feed-content">
-                    <div class="feed-title">Completed <span class="highlight">"Deploy Smart Contract"</span></div>
-                    <div class="feed-desc">Solana Builders · Verified on-chain</div>
-                </div>
-                <div class="feed-xp">+30 XP</div>
-            </div>
-
-            <div class="feed-item">
-                <div class="feed-time">14m</div>
-                <div class="feed-icon rank">📈</div>
-                <div class="feed-content">
-                    <div class="feed-title">Rank up: <span class="highlight">#6 → #4</span></div>
-                    <div class="feed-desc">Global Leaderboard</div>
-                </div>
-                <div class="feed-xp">—</div>
-            </div>
-
-            <div class="feed-item">
-                <div class="feed-time">38m</div>
-                <div class="feed-icon badge">🏆</div>
-                <div class="feed-content">
-                    <div class="feed-title">Earned badge: <span class="highlight">Night Owl</span></div>
-                    <div class="feed-desc">Complete 5 quests after midnight</div>
-                </div>
-                <div class="feed-xp">+50 XP</div>
-            </div>
-
-            <div class="feed-item">
-                <div class="feed-time">1h</div>
-                <div class="feed-icon join">👋</div>
-                <div class="feed-content">
-                    <div class="feed-title">Joined <span class="highlight">DeFi Academy</span></div>
-                    <div class="feed-desc">42 members · 12 active quests</div>
-                </div>
-                <div class="feed-xp">+10 XP</div>
-            </div>
-
-            <div class="feed-item">
-                <div class="feed-time">2h</div>
-                <div class="feed-icon quest">⚡</div>
-                <div class="feed-content">
-                    <div class="feed-title">Completed <span class="highlight">"Submit Hackathon Project"</span></div>
-                    <div class="feed-desc">WAA Club · Admin verified</div>
-                </div>
-                <div class="feed-xp">+20 XP</div>
-            </div>
-
-            <div class="feed-item">
-                <div class="feed-time">3h</div>
-                <div class="feed-icon badge">🏆</div>
-                <div class="feed-content">
-                    <div class="feed-title">Earned badge: <span class="highlight">Builder</span></div>
-                    <div class="feed-desc">Ship 3 projects in one week</div>
-                </div>
-                <div class="feed-xp">+75 XP</div>
-            </div>
-        </div>
-
-        <!-- LEADERBOARD SIDEBAR -->
-        <div class="panel leaderboard">
-            <div class="panel-header">
-                <div class="panel-title">Leaderboard</div>
-                <div class="panel-badge">TOP 10</div>
-            </div>
-
-            <div class="leader-item">
-                <div class="leader-rank top1">01</div>
-                <div class="leader-avatar">🐺</div>
-                <div class="leader-info">
-                    <div class="leader-name">nightwolf.sol</div>
-                    <div class="leader-community">Solana Builders</div>
-                    <div class="leader-bar"><div class="leader-bar-fill" style="width: 100%"></div></div>
-                </div>
-                <div class="leader-xp">18,420</div>
-            </div>
-
-            <div class="leader-item">
-                <div class="leader-rank top2">02</div>
-                <div class="leader-avatar">🔮</div>
-                <div class="leader-info">
-                    <div class="leader-name">defi_sarah</div>
-                    <div class="leader-community">DeFi Academy</div>
-                    <div class="leader-bar"><div class="leader-bar-fill" style="width: 85%"></div></div>
-                </div>
-                <div class="leader-xp">15,670</div>
-            </div>
-
-            <div class="leader-item">
-                <div class="leader-rank top3">03</div>
-                <div class="leader-avatar">⚡</div>
-                <div class="leader-info">
-                    <div class="leader-name">0xkade</div>
-                    <div class="leader-community">WAA Club</div>
-                    <div class="leader-bar"><div class="leader-bar-fill" style="width: 76%"></div></div>
-                </div>
-                <div class="leader-xp">14,210</div>
-            </div>
-
-            <div class="leader-item">
-                <div class="leader-rank" style="color: var(--accent);">04</div>
-                <div class="leader-avatar" style="border-color: var(--accent);">🦞</div>
-                <div class="leader-info">
-                    <div class="leader-name" style="color: var(--accent);">ez.rankr ← YOU</div>
-                    <div class="leader-community">Multiple</div>
-                    <div class="leader-bar"><div class="leader-bar-fill" style="width: 70%"></div></div>
-                </div>
-                <div class="leader-xp" style="color: var(--accent);">12,847</div>
-            </div>
-
-            <div class="leader-item">
-                <div class="leader-rank">05</div>
-                <div class="leader-avatar">🎯</div>
-                <div class="leader-info">
-                    <div class="leader-name">marq_xyz</div>
-                    <div class="leader-community">Solana Builders</div>
-                    <div class="leader-bar"><div class="leader-bar-fill" style="width: 64%"></div></div>
-                </div>
-                <div class="leader-xp">11,890</div>
-            </div>
-
-            <div class="leader-item">
-                <div class="leader-rank">06</div>
-                <div class="leader-avatar">🌙</div>
-                <div class="leader-info">
-                    <div class="leader-name">luna.dev</div>
-                    <div class="leader-community">DeFi Academy</div>
-                    <div class="leader-bar"><div class="leader-bar-fill" style="width: 58%"></div></div>
-                </div>
-                <div class="leader-xp">10,340</div>
-            </div>
-
-            <div class="leader-item">
-                <div class="leader-rank">07</div>
-                <div class="leader-avatar">🔥</div>
-                <div class="leader-info">
-                    <div class="leader-name">burner.eth</div>
-                    <div class="leader-community">WAA Club</div>
-                    <div class="leader-bar"><div class="leader-bar-fill" style="width: 51%"></div></div>
-                </div>
-                <div class="leader-xp">9,780</div>
-            </div>
-
-            <div class="leader-item">
-                <div class="leader-rank">08</div>
-                <div class="leader-avatar">💎</div>
-                <div class="leader-info">
-                    <div class="leader-name">hodl_queen</div>
-                    <div class="leader-community">Solana Builders</div>
-                    <div class="leader-bar"><div class="leader-bar-fill" style="width: 45%"></div></div>
-                </div>
-                <div class="leader-xp">8,420</div>
-            </div>
-        </div>
-
-        <!-- ACTIVE QUESTS -->
-        <div class="panel quests-panel">
-            <div class="panel-header">
-                <div class="panel-title">Active Quests</div>
-                <div class="panel-badge">3 IN PROGRESS</div>
-            </div>
-
-            <div class="quest-item">
-                <div class="quest-status active"></div>
-                <div class="quest-info">
-                    <div class="quest-name">Attend Workshop: "AI Agents in DeFi"</div>
-                    <div class="quest-meta">WAA Club · Ends in 4h</div>
-                    <div class="quest-progress"><div class="quest-progress-fill" style="width: 75%"></div></div>
-                </div>
-                <div class="quest-reward">+20 XP</div>
-            </div>
-
-            <div class="quest-item">
-                <div class="quest-status active"></div>
-                <div class="quest-info">
-                    <div class="quest-name">Ship a PR to Open Source Repo</div>
-                    <div class="quest-meta">Solana Builders · 3 days left</div>
-                    <div class="quest-progress"><div class="quest-progress-fill" style="width: 40%"></div></div>
-                </div>
-                <div class="quest-reward">+30 XP</div>
-            </div>
-
-            <div class="quest-item">
-                <div class="quest-status active"></div>
-                <div class="quest-info">
-                    <div class="quest-name">Review 3 Peer Submissions</div>
-                    <div class="quest-meta">DeFi Academy · 1 of 3 done</div>
-                    <div class="quest-progress"><div class="quest-progress-fill" style="width: 33%"></div></div>
-                </div>
-                <div class="quest-reward">+15 XP</div>
-            </div>
-
-            <div class="quest-item" style="opacity: 0.5;">
-                <div class="quest-status locked"></div>
-                <div class="quest-info">
-                    <div class="quest-name">🔒 Complete Solidity Course (Lvl 5 required)</div>
-                    <div class="quest-meta">DeFi Academy · Locked</div>
-                </div>
-                <div class="quest-reward">+50 XP</div>
-            </div>
-
-            <!-- COMMUNITIES MINI GRID -->
-            <div style="margin-top: 24px;">
-                <div class="panel-header">
-                    <div class="panel-title">Your Communities</div>
-                    <div class="panel-badge">6 ACTIVE</div>
-                </div>
-
-                <div class="communities-grid">
-                    <div class="community-card">
-                        <div class="community-icon">⚡</div>
-                        <div class="community-name">Solana Builders</div>
-                        <div class="community-members">1,247 members</div>
-                        <div class="community-xp">4,820 XP</div>
-                    </div>
-                    <div class="community-card">
-                        <div class="community-icon">🎓</div>
-                        <div class="community-name">WAA Club</div>
-                        <div class="community-members">89 members</div>
-                        <div class="community-xp">3,200 XP</div>
-                    </div>
-                    <div class="community-card">
-                        <div class="community-icon">🏦</div>
-                        <div class="community-name">DeFi Academy</div>
-                        <div class="community-members">534 members</div>
-                        <div class="community-xp">2,100 XP</div>
-                    </div>
-                    <div class="community-card">
-                        <div class="community-icon">🎨</div>
-                        <div class="community-name">Design Guild</div>
-                        <div class="community-members">312 members</div>
-                        <div class="community-xp">1,890 XP</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- TERMINAL LOG -->
-        <div class="terminal-log">
-            <span class="terminal-prompt">rankr $</span>
-            <span class="terminal-text">system.sync — 847 events indexed · 6 communities active · next quest expires in 3h 42m</span>
-            <span class="terminal-cursor"></span>
-        </div>
-
+      </div>
     </div>
+  </div>
+
+  <div class="card">
+    <div class="card-img-placeholder type-gif">🔥</div>
+    <div class="card-body">
+      <div class="card-title">Hackathon Grinders</div>
+      <div class="card-meta">
+        <span class="card-tag">Compete</span>
+        <div class="card-members">
+          <div class="card-avatar-stack"><span class="a3"></span><span class="a1"></span><span class="a4"></span></div>
+          <span>234 members</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-img-placeholder type-img">💡</div>
+    <div class="card-body">
+      <div class="card-title">Startup Founders Austin</div>
+      <div class="card-meta">
+        <span class="card-tag">Business</span>
+        <div class="card-members">
+          <div class="card-avatar-stack"><span class="a4"></span><span class="a2"></span></div>
+          <span>67 members</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-img-placeholder type-png">📚</div>
+    <div class="card-body">
+      <div class="card-title">TTU Reading Circle</div>
+      <div class="card-meta">
+        <span class="card-tag">Education</span>
+        <div class="card-members">
+          <div class="card-avatar-stack"><span class="a1"></span><span class="a3"></span><span class="a2"></span><span class="a4"></span></div>
+          <span>312 members</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-img-placeholder type-gif">🎮</div>
+    <div class="card-body">
+      <div class="card-title">Agent Arena</div>
+      <div class="card-meta">
+        <span class="card-tag">AI</span>
+        <div class="card-members">
+          <div class="card-avatar-stack"><span class="a2"></span><span class="a1"></span></div>
+          <span>56 members</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ACCESS CODE MODAL -->
+<div class="modal-overlay" id="accessModal">
+  <div class="modal">
+    <h2>Enter Access Code</h2>
+    <p>Got an invite? Enter your code below.</p>
+    <div class="code-input-group">
+      <div class="code-segment">
+        <input type="text" maxlength="1" class="code-input" data-index="0" autofocus>
+        <input type="text" maxlength="1" class="code-input" data-index="1">
+        <input type="text" maxlength="1" class="code-input" data-index="2">
+      </div>
+      <span class="code-dash">—</span>
+      <div class="code-segment">
+        <input type="text" maxlength="1" class="code-input" data-index="3">
+        <input type="text" maxlength="1" class="code-input" data-index="4">
+        <input type="text" maxlength="1" class="code-input" data-index="5">
+        <input type="text" maxlength="1" class="code-input" data-index="6">
+      </div>
+    </div>
+    <button class="modal-submit">Submit</button>
+    <div class="modal-waitlist">
+      Don't have an access code? <a href="#">Join the waitlist</a>
+    </div>
+  </div>
+</div>
+
+<!-- PROTOTYPE PAGE NAV -->
+<div class="page-nav">
+  <a href="index.html" class="active">Home</a>
+  <a href="pages/community.html">Community</a>
+  <a href="pages/club.html">Club</a>
+  <a href="pages/profile.html">Profile</a>
+</div>
+
+<script>
+// Access Code Modal
+function showModal() {
+  document.getElementById('accessModal').classList.add('show');
+}
+document.getElementById('accessModal').addEventListener('click', function(e) {
+  if (e.target === this) this.classList.remove('show');
+});
+
+// Auto-advance code inputs
+document.querySelectorAll('.code-input').forEach((input, i, inputs) => {
+  input.addEventListener('input', () => {
+    input.value = input.value.toUpperCase();
+    if (input.value && i < inputs.length - 1) inputs[i+1].focus();
+  });
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Backspace' && !input.value && i > 0) inputs[i-1].focus();
+  });
+});
+
+// Tab switching
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+  });
+});
+</script>
 
 </body>
 </html>
